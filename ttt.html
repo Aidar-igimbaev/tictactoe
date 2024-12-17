@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <style>
+        canvas { border: 1px solid black; }
+    </style>
+</head>
+<body>
+    <canvas id="myCanvas" width="300" height="300"></canvas>
+    <script>
+    
+    const canvas = document.getElementById('myCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    const gridSize = 3;
+    const cellSize = canvas.width / gridSize;
+
+    
+    let board = [
+        '', '', '',
+        '', '', '',
+        '', '', ''
+    ];
+
+   
+    let currentPlayer = 'X';
+    let gameEnded = false;
+
+    // Функция для рисования доски
+    function drawBoard() {
+        
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        
+        ctx.beginPath();
+        for (let i = 1; i < gridSize; i++) {
+          
+            ctx.moveTo(i * cellSize, 0);
+            ctx.lineTo(i * cellSize, canvas.height);
+            
+            ctx.moveTo(0, i * cellSize);
+            ctx.lineTo(canvas.width, i * cellSize);
+        }
+        ctx.stroke();
+
+
+        // Рисуем X и O на доске
+        for (let i = 0; i < board.length; i++) {
+            if (board[i] !== '') {
+                const row = Math.floor(i / gridSize);
+                const col = i % gridSize;
+                const x = col * cellSize + cellSize / 2; 
+                const y = row * cellSize + cellSize / 2; 
+
+                ctx.font = `${cellSize *0.8}px sans-serif`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(board[i], x, y); // Рисуем X или O
+            }
+        }
+    }
+
+
+    //Функция для обработки клика
+    function handleCanvasClick(event) {
+      if (gameEnded) return;
+
+
+      const rect = canvas.getBoundingClientRect();
+      const x = event.clientX - rect.left;
+      const y = event.clientY - rect.top;
+
+    
+      const col = Math.floor(x / cellSize);
+      const row = Math.floor(y / cellSize);
+      const index = row * gridSize + col; // Индекс ячейки в массиве
+
+      if (board[index] === '') {
+        board[index] = currentPlayer; 
+        drawBoard(); // Перерисовываем доску
+
+          // Проверяем победу после каждого хода
+          if (checkWin()) {
+            alert(`Победил игрок ${currentPlayer}!`);
+            gameEnded = true;
+          }
+           else if (checkDraw()) {
+              alert('Ничья!');
+              gameEnded = true;
+            }
+        else {
+         // Переключаем игрока
+         if (currentPlayer === 'X') {
+            currentPlayer = 'O';
+        } 
+        else {
+            currentPlayer = 'X';
+            }
+        
+      }
+     }
+    }
+
+   // Функция проверки победы
+   function checkWin() {
+        const winConditions = [
+            [0, 1, 2], [3, 4, 5], [6, 7, 8], // строки
+            [0, 3, 6], [1, 4, 7], [2, 5, 8], // столбцы
+            [0, 4, 8], [2, 4, 6]  // диагонали
+        ];
+
+        return winConditions.some(condition => {
+           return condition.every(index => board[index] === currentPlayer);
+        });
+    }
+
+    // 8. Функция проверки ничьи
+    function checkDraw() {
+        return board.every(cell => cell !== '');
+    }
+
+
+    //Запускаем игру (рисуем доску и добавляем обработчик клика)
+    drawBoard();
+    canvas.addEventListener('click', handleCanvasClick);
+    </script>
+</body>
+</html>
